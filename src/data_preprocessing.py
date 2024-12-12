@@ -19,6 +19,13 @@ def main():
     X, y = features_target(data)
     print(X.describe())
 
+    # Избавляемся от дубликатов
+    len_before_drop_publicates = len(data)
+    data.drop_duplicates(inplace=True)
+    count_dublicates = len_before_drop_publicates - len(data)
+    if count_dublicates > 0:
+        print(f"Дубликаты удалены из датасета в количестве:{count_dublicates}")
+
     # Создаем пайплайн с предобработкой
     pipeline = Pipeline([("scaler", StandardScaler())])
 

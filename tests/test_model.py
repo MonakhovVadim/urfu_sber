@@ -1,4 +1,4 @@
-from sklearn.metrics import f1_score
+from sklearn.metrics import r2_score
 
 from ..src.common_functions import (
     load_dataset,
@@ -15,6 +15,6 @@ def test_model():
 
     # Оценка модели
     predictions = model.predict(X)
-    test_score = f1_score(y, predictions)
+    test_score = r2_score(y, predictions)
 
     assert test_score > 0.93, f"Failed model test, f1 score on test data: {test_score}"

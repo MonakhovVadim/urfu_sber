@@ -2,6 +2,8 @@ from pathlib import Path
 from enum import Enum
 import joblib
 import pandas as pd
+import os
+import numpy as np
 
 
 DATA_TYPE = Enum("DATA_TYPE", ["BASE", "TRAIN", "TEST"])
@@ -9,6 +11,119 @@ PATH_DATASETS = Path.cwd() / "data"
 PATH_BASE_DS = PATH_DATASETS / "raw"
 PATH_PROCESSED_DS = PATH_DATASETS / "processed"
 PATH_MODEL = Path.cwd() / "models"
+
+
+def load_scor_model():
+    """
+    Загружает веса для алгоритма математической оценки.
+    Если существует файл scor_model.xlsx (сохраненный пользователем), то подгружаются эти данные
+    Если файл не существует, загружаются дефолтные данные из default_scor_model.xlsx
+    Возвращает:
+     - датафрейм содержищий критерии оценки, их веса, минимально и максимально 
+     возможные значения критерив, описания критериев
+    """
+    if os.path.exists('data/scor_model.xlsx'):
+        return pd.read_excel('data/scor_model.xlsx')
+    elif os.path.exists('data/default_scor_model.xlsx'):
+        return pd.read_excel('data/default_scor_model.xlsx')
+    else:        
+        return pd.DataFrame()
+    
+
+def save_scor_model(df):
+    """
+    Сохраняет новые веса критериям, заданные пользователем
+    """
+    df.to_excel('data/scor_model.xlsx', index=False)
+
+
+def dependence_df(df, df_features):
+    """
+    Функция возвращает датафрейм с оценкой критериев, измененных с учетом direct_dependence каждого критерия
+    Критерии в датафрейме могут иметь либо прямую либо обратную зависимость, между значением критерия и риском.
+    Каждый критерий имеет параметр direct_dependence
+    - direct_dependence = 1, означает прямую зависмость риска от значения (чем выше значение, тем выше риск)
+    - direct_dependence = 0, означает обратную зависимость, чем ниже значение, тем выше риск    
+    Параметры:
+     - df: датафрейм с данными
+     - features_df: датафрейм с весами критериев
+     Возвращает:
+     - измененный df с учетом direct_dependence 
+    """    
+        
+    #for feature in df_features:
+    #    if feature['direct_dependence'] == 0:
+    #        df[feature['name']][] = 5 - df[feature['name']]
+    
+    
+    return df
+
+
+def normalize_df(df_features):
+    """
+    Нормализует веса датафрейма с критериями
+    """    
+    # совокупный вес всех критериев
+    total_weight = df_features.weight.sum()
+    # нормализуем веса
+    df_features['weight'] = df_features['weight'] / total_weight
+    
+    return df_features
+
+
+def calculate_scor(df, df_features):
+    """
+    Функция математически рассчитывает и возвращает скорбал
+    Параметры:
+     - df: датафрейм с введенными пользователем значениями критериев
+     - features_df: датафрейм с весами критериев
+     Возвращает:
+     - математически рассчитанный бал оценки риска релиза
+     
+    """
+    # нормализуем вес критериев
+    df_features = normalize_df(df_features)
+    # меняем оценки на противоположные для критериев с обатной зависимостью
+    df = dependence_df(df, df_features)
+   
+    return sum(df.iloc[0][feature] * df_features.loc[df_features['name'] == feature, 'weight'].values[0]
+                   for feature in df_features['name'])
+
+
+def dataset_generation(df_features, num_samples = 1000):
+    """
+    Функция генерации синтетического датасета. Таргетный скорбал рассчитывается математически,
+    на основании весов, заданных экспертом и сохраненных в файле scor_model 
+    либо default_scor_model (если веса по-умолчанию не менялись)
+    Параметры:
+    - df_features: датафрейм с критериями и их весами
+    - num_samples: количесвто строк для генерации в синтетическом датасете (по умолчанию 1000)
+    """
+    
+    # если датафрейм пустой, значит у нас нет весов и мы не сможем сгенерировать датасет
+    if df_features.empty:
+        return -1
+    
+    df_features = normalize_df(df_features)
+    
+    # Генерация синтетических данных
+    synthetic_data = {}    
+    for index, row in df_features.iterrows():
+        feature_values = np.random.randint(row['min_value'], row['max_value']+1, num_samples)
+        synthetic_data[row['name']] = feature_values
+
+    # Создание датафрейма из сгенерированных данных
+    df_synthetic = pd.DataFrame(synthetic_data)
+    
+    # Функция для расчета целевой переменной
+    def calc_target(row):
+        return sum(row[feature] * df_features.loc[df_features['name'] == feature, 'weight'].values[0]
+                   for feature in df_features['name'])
+
+    # Вычисление целевой переменной и добавление в датафрейм
+    df_synthetic['target'] = df_synthetic.apply(calc_target, axis=1)
+    
+    return df_synthetic
 
 
 # функция осуществляет формирование пути к каталогу по типу датасета
@@ -22,59 +137,6 @@ def path_by_type(data_type):
         path = PATH_PROCESSED_DS / "test"
 
     return path
-
-
-# функция осуществляет сохранение датасета в файл
-def save_dataset(data, data_type, name=""):
-
-    path = path_by_type(data_type) / name
-    path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        data.to_csv(path.with_suffix(".csv"), index=False)
-    except PermissionError:
-        print(
-            "Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}."
-        )
-    except Exception as e:
-        print(f"Ошибка при сохранении датасета {name}!\n", e)
-
-
-# функция осуществляет загрузку датасета из файла
-def load_dataset(data_type, name=""):
-
-    path = path_by_type(data_type) / name
-    try:
-        data = pd.read_csv(path.with_suffix(".csv"))
-        return data
-    except Exception as e:
-        print(f"Ошибка при загрузке датасета {name}!\n", e)
-        return None
-
-
-# функция осуществляет сохранение пайплайна обработки параметров в файл
-def save_pipeline(pipeline):
-
-    try:
-        # сохраняем pipeline в туже папку, где хранится модель
-        PATH_MODEL.mkdir(parents=True, exist_ok=True)
-        joblib.dump(pipeline, PATH_MODEL / "pipeline.pkl")
-        print("Пайплайн успешно сохранен.")
-    except PermissionError:
-        print(
-            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {PATH_MODEL}."
-        )
-    except Exception as e:
-        print(f"Произошла неизвестная ошибка: {e}")
-
-
-# сохраняем осуществляет загрузку pipeline из файла
-def load_pipeline():
-
-    try:
-        return joblib.load(PATH_MODEL / "pipeline.pkl")
-    except Exception as e:
-        print("Ошибка при загрузке пайплайна!\n", e)
-        return None
 
 
 # функция осущетсвляет разделение датасета на параметры и целевое значение

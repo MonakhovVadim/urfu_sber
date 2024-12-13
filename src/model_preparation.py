@@ -5,22 +5,28 @@ from common_functions import (
     load_dataset,
     save_model,
     DATA_TYPE,
+    MODEL_TYPE,
 )
 
 
-def main():
+def train_model(model_type):
     # Загружаем датасет
-    data = load_dataset(DATA_TYPE.TRAIN)
+    data = load_dataset(DATA_TYPE.TRAIN, model_type)
 
     # Получаем имена предикторов и целевого признака
     X, y = features_target(data)
 
+    # TODO использовать модель получше
     # Обучаем модель
-    model = LinearRegression(random_state=42)
+    model = LinearRegression()
     model.fit(X, y)
 
     # Сохраняем модель
-    save_model(model)
+    save_model(model, model_type)
+
+
+def main():
+    train_model(MODEL_TYPE.DEFAULT)
 
 
 if __name__ == "__main__":

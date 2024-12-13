@@ -7,10 +7,8 @@ import numpy as np
 
 
 DATA_TYPE = Enum("DATA_TYPE", ["BASE", "TRAIN", "TEST"])
-PATH_DATASETS = Path.cwd() / "data"
-PATH_BASE_DS = PATH_DATASETS / "raw"
-PATH_PROCESSED_DS = PATH_DATASETS / "processed"
-PATH_MODEL = Path.cwd() / "models"
+MODEL_TYPE = Enum("MODEL_TYPE", ["DEFAULT", "CUSTOM"])
+ROOT_PATH = Path.cwd()
 
 
 def load_scor_model():
@@ -103,16 +101,22 @@ def calculate_scor(df_data, df_params):
 
 
 # функция осуществляет формирование пути к каталогу по типу датасета
-def path_by_type(data_type):
-
+def data_path(data_type, model_type):
+    base_path = ROOT_PATH / "data" / \
+        ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
     if data_type == DATA_TYPE.BASE:
-        path = PATH_BASE_DS
+        path = base_path / "raw"
     elif data_type == DATA_TYPE.TRAIN:
-        path = PATH_PROCESSED_DS / "train"
+        path = base_path / "processed" / "train"
     elif data_type == DATA_TYPE.TEST:
-        path = PATH_PROCESSED_DS / "test"
+        path = base_path / "processed" / "test"
 
     return path
+
+
+def model_path(model_type):
+    return ROOT_PATH / "models" / \
+        ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
 
 
 # функция осущетсвляет разделение датасета на параметры и целевое значение
@@ -124,26 +128,67 @@ def features_target(data):
     return data[features], data["target"]
 
 
-# функия сохраняет модель в файл
-def save_model(model):
-
-    PATH_MODEL.mkdir(parents=True, exist_ok=True)
+# функция осуществляет сохранение датасета в файл
+def save_dataset(data, data_type, model_type):
+    path = data_path(data_type, model_type)
+    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        joblib.dump(model, PATH_MODEL / "model.pkl")
+        data.to_csv(path.with_suffix(".csv"), index=False)
+    except PermissionError:
+        print(
+            "Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}."
+        )
+    except Exception as e:
+        print(f"Ошибка при сохранении датасета {data_type} {model_type}!\n", e)
+
+
+# функция осуществляет загрузку датасета из файла
+def load_dataset(data_type, model_type):
+    path = data_path(data_type, model_type)
+    try:
+        data = pd.read_csv(path.with_suffix(".csv"))
+        return data
+    except Exception as e:
+        print(f"Ошибка при загрузке датасета {data_type} {model_type}!\n", e)
+        return None
+
+
+# функция осуществляет сохранение пайплайна обработки параметров в файл
+def save_pipeline(pipeline, model_type):
+    try:
+        path = model_path(model_type)
+        # сохраняем pipeline в туже папку, где хранится модель
+        path.mkdir(parents=True, exist_ok=True)
+        joblib.dump(pipeline, path / "pipeline.pkl")
+        print("Пайплайн успешно сохранен.")
+    except PermissionError:
+        print(
+            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {path}."
+        )
+    except Exception as e:
+        print(f"Произошла неизвестная ошибка: {e}")
+
+
+# функия сохраняет модель в файл
+def save_model(model, model_type):
+    path = model_path(model_type)
+    path.mkdir(parents=True, exist_ok=True)
+    try:
+        joblib.dump(model, path / "model.pkl")
         print("Модель успешно сохранена.")
     except PermissionError:
         print(
-            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {PATH_MODEL}."
+            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {path}."
         )
     except Exception as e:
         print(f"Произошла неизвестная ошибка: {e}")
 
 
 # функия загружает модель из файла и возвращает ее в случае успеха
-def load_model():
-
+def load_model(model_type):
+    path = model_path(model_type)
     try:
-        return joblib.load(PATH_MODEL / "model.pkl")
+        return joblib.load(path / "model.pkl")
     except Exception as e:
         print("Ошибка при загрузке модели!\n", e)
         return None

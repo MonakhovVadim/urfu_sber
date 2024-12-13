@@ -1,6 +1,7 @@
 from common_functions import normalize_df
 import numpy as np
 import pandas as pd
+from common_functions import load_scor_model, data_path, DATA_TYPE, MODEL_TYPE
 
 
 def dataset_generation(df_params, num_samples=1000):
@@ -42,3 +43,14 @@ def dataset_generation(df_params, num_samples=1000):
     df_synthetic["target"] = df_synthetic.apply(calc_target, axis=1)
 
     return df_synthetic
+
+
+def main():
+    df = load_scor_model()
+    data = dataset_generation(df, 1000)
+    path = data_path(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT).with_suffix(".csv")
+    data.to_csv(path)
+
+
+if __name__ == "__main__":
+    main()

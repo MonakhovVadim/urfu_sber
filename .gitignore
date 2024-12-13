@@ -1,2 +1,8 @@
 venv
 src/__pycache__/
+/data/scor_model.xlsx
+/data/synthetic_dataset.xlsx
+/data/default/*
+/data/custom/*
+/models/default/*.pkl
+/models/custom/*.pkl

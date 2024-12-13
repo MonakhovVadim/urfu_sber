@@ -1,9 +1,9 @@
-from common_functions import normalize_df
+from common_functions import normalize_df, recalculate_values
 import numpy as np
 import pandas as pd
 
 
-def dataset_generation(df_params, num_samples=1000):
+def dataset_generation(df_params, num_samples=10):
     """
     Функция генерации синтетического датасета. Таргетный скорбал рассчитывается математически,
     на основании весов, заданных экспертом и сохраненных в файле scor_model
@@ -30,6 +30,9 @@ def dataset_generation(df_params, num_samples=1000):
     # Создание датафрейма из сгенерированных данных
     df_synthetic = pd.DataFrame(synthetic_data)
 
+    # учитываем direct_dependece в оценках критериев
+    df_recalculated = recalculate_values(df_synthetic, df_params)
+
     # Функция для расчета целевой переменной
     def calc_target(row):
         return sum(
@@ -39,6 +42,7 @@ def dataset_generation(df_params, num_samples=1000):
         )
 
     # Вычисление целевой переменной и добавление в датафрейм
-    df_synthetic["target"] = df_synthetic.apply(calc_target, axis=1)
+    df_recalculated["target"] = df_recalculated.apply(calc_target, axis=1)
+    df_synthetic["target"] = df_recalculated["target"]
 
     return df_synthetic

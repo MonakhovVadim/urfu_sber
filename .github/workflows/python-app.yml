@@ -34,7 +34,7 @@ jobs:
         sudo apt update && sudo apt install ffmpeg
     - name: Lint with ruff
       run: |
-        ruff check src tests --fix --ignore E501 --no-cache --silent
+        ruff check src tests --fix --ignore E501 --no-cache
     - name: Run tests
       run: |
         pytest

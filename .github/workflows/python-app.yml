@@ -11,6 +11,7 @@ on:
     branches: [ "develop", "main" ]
     paths: [ "src/**", "tests/**" ]
 
+
 permissions:
   contents: read
 

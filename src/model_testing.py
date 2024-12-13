@@ -9,7 +9,6 @@ from common_functions import (
 
 
 def main():
-
     model = load_model()
     data = load_dataset(DATA_TYPE.TEST)
     X, y = features_target(data)

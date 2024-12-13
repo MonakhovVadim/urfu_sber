@@ -13,13 +13,19 @@ ROOT_PATH = Path.cwd()
 
 def load_scor_model():
     """
-    Загружает веса для алгоритма математической оценки.
-    Если существует файл scor_model.xlsx (сохраненный пользователем), то подгружаются эти данные
-    Если файл не существует, загружаются дефолтные данные из default_scor_model.xlsx
+    Загрузка весов для алгоритма математической оценки.
+
+    Если существует файл scor_model.xlsx (сохраненный пользователем),
+        то подгружаются эти данные
+    Если файл не существует,
+        загружаются дефолтные данные из default_scor_model.xlsx
+
     Возвращает:
-     - датафрейм содержищий критерии оценки, их веса, минимально и максимально
-     возможные значения критерив, описания критериев
+        pd.DataFrame: датафрейм, содержащий критерии оценки, их веса,
+        минимально и максимально возможные значения критериев,
+        описания критериев
     """
+
     if os.path.exists("data/scor_model.xlsx"):
         return pd.read_excel("data/scor_model.xlsx", dtype={"weight": float})
     elif os.path.exists("data/default_scor_model.xlsx"):
@@ -30,8 +36,12 @@ def load_scor_model():
 
 def save_scor_model(df):
     """
-    Сохраняет новые веса критериям, заданные пользователем
+    Сохранение новых весов критериев, заданных пользователем
+
+    Аргументы:
+        df (pd.Dataframe): pandas dataframe с весами критериев
     """
+
     os.makedirs("data", exist_ok=True)
     df.to_excel("data/scor_model.xlsx", index=False)
 
@@ -44,10 +54,10 @@ def recalculate_values(df_data, df_params):
     - direct_dependence = 1, означает прямую зависмость риска от значения (чем выше значение, тем выше риск)
     - direct_dependence = 0, означает обратную зависимость, чем ниже значение, тем выше риск
     Параметры:
-     - df_data: датафрейм с данными
-     - df_params: датафрейм с параметрами критериев (вес, зависимость, максимальное значение)
+     - df_data (pd.Dataframe): датафрейм с данными
+     - df_params (pd.Dataframe): датафрейм с параметрами критериев (вес, зависимость, максимальное значение)
      Возвращает:
-     - измененный df с учетом direct_dependence
+     - df_recalculated (pd.Dataframe): измененный датафрейм с учетом direct_dependence
     """
 
     # Создаем копию датафрейма с данными для изменения
@@ -68,11 +78,19 @@ def recalculate_values(df_data, df_params):
 
 def normalize_df(df_params):
     """
-    Нормализует веса датафрейма с критериями
+    Нормализация веса датафрейма с критериями
+
+    Аргументы:
+        df_params (pd.Dataframe): dataframe с параметрами критериев
+
+    Возвращает:
+        df_params (pd.Dataframe): dataframe с нормализованными весами
     """
-    # совокупный вес всех критериев
+
+    # Расчитываем совокупный вес всех критериев
     total_weight = df_params.weight.sum()
-    # нормализуем веса
+
+    # Нормализуем веса
     df_params["weight"] = df_params["weight"] / total_weight
 
     return df_params
@@ -80,17 +98,19 @@ def normalize_df(df_params):
 
 def calculate_scor(df_data, df_params):
     """
-    Функция математически рассчитывает и возвращает скорбал
-    Параметры:
-     - df_data: датафрейм с введенными пользователем значениями критериев
-     - df_params: датафрейм с весами критериев
-     Возвращает:
-     - математически рассчитанный бал оценки риска релиза
+    Математический расчет скорбала
 
+    Аргументы:
+        df_data (pd.Dataframe): dataframe с введенными пользователем значениями критериев
+        df_params (pd.Dataframe): dataframe с весами критериев
+
+    Возвращает:
+        sum (int): математически рассчитанный бал оценки риска релиза
     """
-    # нормализуем вес критериев
+
+    # Нормализуем вес критериев
     df_params = normalize_df(df_params)
-    # меняем оценки на противоположные для критериев с обатной зависимостью
+    # Меняем оценки на противоположные для критериев с обатной зависимостью
     df_data = recalculate_values(df_data, df_params)
 
     return sum(
@@ -100,10 +120,23 @@ def calculate_scor(df_data, df_params):
     )
 
 
-# функция осуществляет формирование пути к каталогу по типу датасета
 def data_path(data_type, model_type):
-    base_path = ROOT_PATH / "data" / \
-        ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
+    """
+    Формирование пути к каталогу по типу датасета
+
+    Аргументы:
+        data_type (str): тип данных ("BASE", "TRAIN", "TEST")
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+
+    Возвращает:
+        path (str): путь к каталогу
+    """
+
+    base_path = (
+        ROOT_PATH
+        / "data"
+        / ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
+    )
     if data_type == DATA_TYPE.BASE:
         path = base_path / "raw"
     elif data_type == DATA_TYPE.TRAIN:
@@ -115,12 +148,35 @@ def data_path(data_type, model_type):
 
 
 def model_path(model_type):
-    return ROOT_PATH / "models" / \
-        ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
+    """
+    Функция возвращает путь к модели в зависимости от её типа
+
+    Аргументы:
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+
+    Returns:
+        str: путь к модели
+    """
+
+    return (
+        ROOT_PATH
+        / "models"
+        / ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
+    )
 
 
-# функция осущетсвляет разделение датасета на параметры и целевое значение
 def features_target(data):
+    """
+    Разделение датасета на параметры и целевое значение
+
+    Args:
+        data (pd.Dataframe): dataframe с данными
+
+    Returns:
+     - features: параметры
+     - target: целевое значение
+    """
+
     # Получаем имена предикторов
     features = data.columns.to_list()
     features.remove("target")
@@ -128,8 +184,16 @@ def features_target(data):
     return data[features], data["target"]
 
 
-# функция осуществляет сохранение датасета в файл
 def save_dataset(data, data_type, model_type):
+    """
+    Сохранение датасета в файл
+
+    Аргументы:
+        data (pd.Dataframe): dataframe с данными
+        data_type (str): тип данных ("BASE", "TRAIN", "TEST")
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+    """
+
     path = data_path(data_type, model_type)
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -144,6 +208,17 @@ def save_dataset(data, data_type, model_type):
 
 # функция осуществляет загрузку датасета из файла
 def load_dataset(data_type, model_type):
+    """
+    Загрузка датасета из файла
+
+    Аргументы:
+        data_type (str): тип данных ("BASE", "TRAIN", "TEST")
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+
+    Возвращает:
+        data (pd.Dataframe): dataframe с данными
+    """
+
     path = data_path(data_type, model_type)
     try:
         data = pd.read_csv(path.with_suffix(".csv"))
@@ -153,8 +228,15 @@ def load_dataset(data_type, model_type):
         return None
 
 
-# функция осуществляет сохранение пайплайна обработки параметров в файл
 def save_pipeline(pipeline, model_type):
+    """
+    Сохранение пайплайна обработки параметров в файл
+
+    Аргументы:
+        pipeline (Pipeline): пайплайн с предобработкой данных
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+    """
+
     try:
         path = model_path(model_type)
         # сохраняем pipeline в туже папку, где хранится модель
@@ -169,8 +251,15 @@ def save_pipeline(pipeline, model_type):
         print(f"Произошла неизвестная ошибка: {e}")
 
 
-# функия сохраняет модель в файл
 def save_model(model, model_type):
+    """
+    Сохранение модели в файл
+
+    Аргументы:
+        model : модель
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+    """
+
     path = model_path(model_type)
     path.mkdir(parents=True, exist_ok=True)
     try:
@@ -184,8 +273,17 @@ def save_model(model, model_type):
         print(f"Произошла неизвестная ошибка: {e}")
 
 
-# функия загружает модель из файла и возвращает ее в случае успеха
 def load_model(model_type):
+    """
+    Загрузка модели из файла
+
+    Аргументы:
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+
+    Возвращает:
+        model: модель
+    """
+
     path = model_path(model_type)
     try:
         return joblib.load(path / "model.pkl")
@@ -194,8 +292,16 @@ def load_model(model_type):
         return None
 
 
-# функия возвращает структуру датасета, на котором происходит обучение модели
 def desc_dataset():
+    """
+    Получение структуры датасета, на котором происходит обучение модели
+
+    Возвращает:
+        dict: словарь ключ-значение с ключами:
+            bool_features: признаки с булевым значением
+            cat_features: категориальные признаки
+            num_features: числовые признаки
+    """
 
     # пример: ("exercise angina", ["no", "yes"]),
     bool_features = []

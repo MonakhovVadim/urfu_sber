@@ -1,7 +1,7 @@
 from common_functions import normalize_df
 import numpy as np
 import pandas as pd
-from common_functions import load_scor_model, data_path, DATA_TYPE, MODEL_TYPE
+from common_functions import load_scor_model, data_path, recalculate_values, DATA_TYPE, MODEL_TYPE
 
 
 def dataset_generation(df_params, num_samples=1000):
@@ -32,19 +32,20 @@ def dataset_generation(df_params, num_samples=1000):
     # Создание датафрейма из сгенерированных данных
     df_synthetic = pd.DataFrame(synthetic_data)
 
+    # учитываем direct_dependece в оценках критериев
+    df_recalculated = recalculate_values(df_synthetic, df_params)
+
     # Функция для расчета целевой переменной
     def calc_target(row):
         return sum(
-            (df_params.loc[df_params["name"] == feature, "max_value"].values[0]
-             * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * -1 + 1)
-             + row[feature]
-             * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * 2 - 1))
+            row[feature]
             * df_params.loc[df_params["name"] == feature, "weight"].values[0]
             for feature in df_params["name"]
         )
 
-    # Вычисление целевой переменной и добавление в датафрейм
-    df_synthetic["target"] = df_synthetic.apply(calc_target, axis=1)
+    # Вычисление целевой переменной в пересчитанном датафрейме
+    df_recalculated["target"] = df_recalculated.apply(calc_target, axis=1)
+    df_synthetic["target"] = df_recalculated["target"]
 
     return df_synthetic
 

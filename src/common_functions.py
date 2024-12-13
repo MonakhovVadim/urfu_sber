@@ -116,7 +116,6 @@ def calculate_scor(df_data, df_params):
     return sum(
         df_data.iloc[0][feature]
         * df_params.loc[df_params["name"] == feature, "weight"].values[0]
-        * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * 2 - 1)
         for feature in df_params["name"]
     )
 

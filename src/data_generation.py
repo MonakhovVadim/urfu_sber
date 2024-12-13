@@ -35,9 +35,11 @@ def dataset_generation(df_params, num_samples=1000):
     # Функция для расчета целевой переменной
     def calc_target(row):
         return sum(
-            row[feature]
+            (df_params.loc[df_params["name"] == feature, "max_value"].values[0]
+             * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * -1 + 1)
+             + row[feature]
+             * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * 2 - 1))
             * df_params.loc[df_params["name"] == feature, "weight"].values[0]
-            * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * 2 - 1)
             for feature in df_params["name"]
         )
 

@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LinearRegression
 
 from common_functions import (
     features_target,
@@ -16,7 +16,7 @@ def main():
     X, y = features_target(data)
 
     # Обучаем модель
-    model = RandomForestClassifier(random_state=42)
+    model = LinearRegression(random_state=42)
     model.fit(X, y)
 
     # Сохраняем модель

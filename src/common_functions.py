@@ -251,6 +251,16 @@ def save_pipeline(pipeline, model_type):
         print(f"Произошла неизвестная ошибка: {e}")
 
 
+# загружаем pipeline из файла
+def load_pipeline(model_type):
+    try:
+        path = model_path(model_type)
+        return joblib.load(path / "pipeline.pkl")
+    except Exception as e:
+        print("Ошибка при загрузке пайплайна!\n", e)
+        return None
+
+
 def save_model(model, model_type):
     """
     Сохранение модели в файл

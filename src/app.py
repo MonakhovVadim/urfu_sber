@@ -1,65 +1,68 @@
 import streamlit as st
 import pandas as pd
-from common_functions import (
-    desc_dataset,
-    load_model,
-    load_pipeline,
-)
+import numpy as np
+from common_functions import load_scor_model, load_model, calculate_scor
 
 
 def main():
 
-    # загружаем модель и пайплайн для скелера введенных пользователем данных
+    # загружаем модель
     model = load_model()
-    pipeline = load_pipeline()
 
-    # выводим приверственный тайтл и кратко обозначаем, что делает помощник
-    st.title("Определение риска вносимых изменений")
+    # выводим тайтл и кратко обозначаем функционал приложения
+    st.title("Определитель риска внедрения")
+    st.write(
+        """Сервис оценки технологического риска внедрений релизов программного обеспечения, 
+        предназначенного для выполнения процедур трансформации данных (ETL) и 
+        расчетов на витринах хранилища данных (DWH).
+         """
+    )
 
-    features = desc_dataset()
+    # состав критериев
+    df_params = load_scor_model()
+    features = list(df_params.name)
 
-    # объединяем при выводе булевы признаки с категориальными
-    # поскольку в любом случае будем использоать единый визуаьный интерфейс
-    radio_elements = []
-    bfel = features["bool_features"] + features["cat_features"]
-    for feature in bfel:
-        element = st.radio(*feature)
-        radio_elements.append(element)
-
+    # Выводим критерии оценки и слайдеры для выбора значения критерия
     num_elements = []
-    for feature in features["num_features"]:
+    for _, feature in df_params.iterrows():
         element = st.slider(
-            f"{feature[0]} ({feature[1]})", min_value=feature[2], max_value=feature[3]
+            feature[0],
+            min_value=feature[1],
+            max_value=feature[2],
+            value=0,
+            step=1,
+            help=f"{feature[6]}.  {feature[3]}",
         )
         num_elements.append(element)
 
     if st.button("Определить риск"):
         user_choice = {}
-        # поскольку st.radio возвращает текст кнопки, нужно перевести их обратно в числа
-        # и заодно формируем словарь с выбором пользователя
-        for feature, rel in zip(bfel, radio_elements):
-            user_choice[feature[0]] = feature[1].index(rel)
 
-        for feature, nel in zip(features["num_features"], num_elements):
-            user_choice[feature[0]] = nel
+        for feature, fvalue in zip(features, num_elements):
+            user_choice[feature] = fvalue
 
         # переводим пользовательский вывод в датафрейм
         df = pd.DataFrame(user_choice, index=[0])
 
-        print("Датафрейм с введенным пользоваталем данными\n", df)
+        # математический расчет скорбала
+        scor_math = calculate_scor(df, df_params)
 
-        # приводим столбцы в правильное расположение (как в изначальном датафрейме)
-        df = df[pipeline.feature_names_in_]
+        # рандом скорбала модели (когда будет готова модель, поменять)
+        scor_model = np.random.uniform(0, 5, 1)
+        # scor_model = model.predict_proba(pd.DataFrame(df, columns=df.columns))
 
-        print("Датафрейм с корректной последовательность колонок\n", df)
-        # преобразуем сырые данные по пайплайну, который использовался при преобразовании датасета
-        df_scaled = pipeline.transform(df)
-        print("Преобразованный датафрейм\n", df_scaled)
-
-        predict = model.predict_proba(pd.DataFrame(df_scaled, columns=df.columns))
-
-        st.write(f"{predict}")
+        st.write(f"Оценка риск-балла с помощью модели: **:red[{scor_model}]**")
+        st.write(f"Оценка риск-балла с помощью мат.алгоритма: **:red[{scor_math}]**")
 
 
 if __name__ == "__main__":
-    main()
+    pages = [
+        st.Page(main, title="Определение скорбала"),
+        st.Page("pages/ds_generation.py", title="Генерация датасета"),
+        st.Page("pages/upload_train.py", title="Загрузка датасета и обучение"),
+        st.Page("pages/version.py", title="Версии приложения"),
+    ]
+
+    pg = st.navigation(pages)
+
+    pg.run()

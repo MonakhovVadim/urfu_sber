@@ -2,6 +2,8 @@ from pathlib import Path
 from enum import Enum
 import joblib
 import pandas as pd
+import os
+import numpy as np
 
 
 DATA_TYPE = Enum("DATA_TYPE", ["BASE", "TRAIN", "TEST"])
@@ -9,6 +11,95 @@ PATH_DATASETS = Path.cwd() / "data"
 PATH_BASE_DS = PATH_DATASETS / "raw"
 PATH_PROCESSED_DS = PATH_DATASETS / "processed"
 PATH_MODEL = Path.cwd() / "models"
+
+
+def load_scor_model():
+    """
+    Загружает веса для алгоритма математической оценки.
+    Если существует файл scor_model.xlsx (сохраненный пользователем), то подгружаются эти данные
+    Если файл не существует, загружаются дефолтные данные из default_scor_model.xlsx
+    Возвращает:
+     - датафрейм содержищий критерии оценки, их веса, минимально и максимально
+     возможные значения критерив, описания критериев
+    """
+    if os.path.exists("data/scor_model.xlsx"):
+        return pd.read_excel("data/scor_model.xlsx", dtype={"weight": float})
+    elif os.path.exists("data/default_scor_model.xlsx"):
+        return pd.read_excel("data/default_scor_model.xlsx")
+    else:
+        return pd.DataFrame()
+
+
+def save_scor_model(df):
+    """
+    Сохраняет новые веса критериям, заданные пользователем
+    """
+    os.makedirs("data", exist_ok=True)
+    df.to_excel("data/scor_model.xlsx", index=False)
+
+
+def recalculate_values(df_data, df_params):
+    """
+    Функция возвращает датафрейм с оценкой критериев, измененных с учетом direct_dependence каждого критерия
+    Критерии в датафрейме могут иметь либо прямую либо обратную зависимость, между значением критерия и риском.
+    Каждый критерий имеет параметр direct_dependence
+    - direct_dependence = 1, означает прямую зависмость риска от значения (чем выше значение, тем выше риск)
+    - direct_dependence = 0, означает обратную зависимость, чем ниже значение, тем выше риск
+    Параметры:
+     - df_data: датафрейм с данными
+     - df_params: датафрейм с параметрами критериев (вес, зависимость, максимальное значение)
+     Возвращает:
+     - измененный df с учетом direct_dependence
+    """
+
+    # Создаем копию датафрейма с данными для изменения
+    df_recalculated = df_data.copy()
+
+    # Проходим по всем фичам в параметрах
+    for _, row in df_params.iterrows():
+        feature = row["name"]
+        direct_dependence = row["direct_dependence"]
+        max_value = row["max_value"]
+
+        # Если обратная зависимость, пересчитываем значения
+        if direct_dependence == 0:
+            df_recalculated[feature] = max_value - df_recalculated[feature]
+
+    return df_recalculated
+
+
+def normalize_df(df_params):
+    """
+    Нормализует веса датафрейма с критериями
+    """
+    # совокупный вес всех критериев
+    total_weight = df_params.weight.sum()
+    # нормализуем веса
+    df_params["weight"] = df_params["weight"] / total_weight
+
+    return df_params
+
+
+def calculate_scor(df_data, df_params):
+    """
+    Функция математически рассчитывает и возвращает скорбал
+    Параметры:
+     - df_data: датафрейм с введенными пользователем значениями критериев
+     - df_params: датафрейм с весами критериев
+     Возвращает:
+     - математически рассчитанный бал оценки риска релиза
+
+    """
+    # нормализуем вес критериев
+    df_params = normalize_df(df_params)
+    # меняем оценки на противоположные для критериев с обатной зависимостью
+    df_data = recalculate_values(df_data, df_params)
+
+    return sum(
+        df_data.iloc[0][feature]
+        * df_params.loc[df_params["name"] == feature, "weight"].values[0]
+        for feature in df_params["name"]
+    )
 
 
 # функция осуществляет формирование пути к каталогу по типу датасета
@@ -22,59 +113,6 @@ def path_by_type(data_type):
         path = PATH_PROCESSED_DS / "test"
 
     return path
-
-
-# функция осуществляет сохранение датасета в файл
-def save_dataset(data, data_type, name=""):
-
-    path = path_by_type(data_type) / name
-    path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        data.to_csv(path.with_suffix(".csv"), index=False)
-    except PermissionError:
-        print(
-            "Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}."
-        )
-    except Exception as e:
-        print(f"Ошибка при сохранении датасета {name}!\n", e)
-
-
-# функция осуществляет загрузку датасета из файла
-def load_dataset(data_type, name=""):
-
-    path = path_by_type(data_type) / name
-    try:
-        data = pd.read_csv(path.with_suffix(".csv"))
-        return data
-    except Exception as e:
-        print(f"Ошибка при загрузке датасета {name}!\n", e)
-        return None
-
-
-# функция осуществляет сохранение пайплайна обработки параметров в файл
-def save_pipeline(pipeline):
-
-    try:
-        # сохраняем pipeline в туже папку, где хранится модель
-        PATH_MODEL.mkdir(parents=True, exist_ok=True)
-        joblib.dump(pipeline, PATH_MODEL / "pipeline.pkl")
-        print("Пайплайн успешно сохранен.")
-    except PermissionError:
-        print(
-            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {PATH_MODEL}."
-        )
-    except Exception as e:
-        print(f"Произошла неизвестная ошибка: {e}")
-
-
-# сохраняем осуществляет загрузку pipeline из файла
-def load_pipeline():
-
-    try:
-        return joblib.load(PATH_MODEL / "pipeline.pkl")
-    except Exception as e:
-        print("Ошибка при загрузке пайплайна!\n", e)
-        return None
 
 
 # функция осущетсвляет разделение датасета на параметры и целевое значение

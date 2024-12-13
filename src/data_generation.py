@@ -37,6 +37,7 @@ def dataset_generation(df_params, num_samples=1000):
         return sum(
             row[feature]
             * df_params.loc[df_params["name"] == feature, "weight"].values[0]
+            * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * 2 - 1)
             for feature in df_params["name"]
         )
 
@@ -50,7 +51,7 @@ def main():
     df = load_scor_model()
     data = dataset_generation(df, 1000)
     path = data_path(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT).with_suffix(".csv")
-    data.to_csv(path)
+    data.to_csv(path, index=False)
 
 
 if __name__ == "__main__":

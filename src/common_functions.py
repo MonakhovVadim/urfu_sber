@@ -116,6 +116,7 @@ def calculate_scor(df_data, df_params):
     return sum(
         df_data.iloc[0][feature]
         * df_params.loc[df_params["name"] == feature, "weight"].values[0]
+        * (df_params.loc[df_params["name"] == feature, "direct_dependence"].values[0] * 2 - 1)
         for feature in df_params["name"]
     )
 
@@ -249,6 +250,16 @@ def save_pipeline(pipeline, model_type):
         )
     except Exception as e:
         print(f"Произошла неизвестная ошибка: {e}")
+
+
+# загружаем pipeline из файла
+def load_pipeline(model_type):
+    try:
+        path = model_path(model_type)
+        return joblib.load(path / "pipeline.pkl")
+    except Exception as e:
+        print("Ошибка при загрузке пайплайна!\n", e)
+        return None
 
 
 def save_model(model, model_type):

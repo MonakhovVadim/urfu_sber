@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from common_functions import load_scor_model, load_model, calculate_scor
+from common_functions import load_scor_model, load_pipeline, load_model, calculate_scor, MODEL_TYPE
 
 
 def main():
@@ -10,13 +10,14 @@ def main():
     """
 
     # Загружаем модель
-    model = load_model()
+    pipeline = load_pipeline(MODEL_TYPE.DEFAULT)
+    model = load_model(MODEL_TYPE.DEFAULT)
 
     # Выводим тайтл и кратко обозначаем функционал приложения
     st.title("Определитель риска внедрения")
     st.write(
-        """Сервис оценки технологического риска внедрений релизов программного обеспечения, 
-        предназначенного для выполнения процедур трансформации данных (ETL) и 
+        """Сервис оценки технологического риска внедрений релизов программного обеспечения,
+        предназначенного для выполнения процедур трансформации данных (ETL) и
         расчетов на витринах хранилища данных (DWH).
          """
     )
@@ -50,10 +51,17 @@ def main():
         # Математический расчет скорбала
         scor_math = calculate_scor(df, df_params)
 
-        # Рандом скорбала модели
-        # TODO: когда будет готова модель, поменять
-        scor_model = np.random.uniform(0, 5, 1)
-        # scor_model = model.predict_proba(pd.DataFrame(df, columns=df.columns))
+        # приводим столбцы в правильное расположение (как в изначальном датафрейме)
+        df = df[pipeline.feature_names_in_]
+
+        print("Датафрейм с корректной последовательность колонок\n", df)
+
+        # преобразуем сырые данные по пайплайну, который использовался при преобразовании датасета
+        df_scaled = pipeline.transform(df)
+        print("Преобразованный датафрейм\n", df_scaled)
+
+        scor_model = model.predict(pd.DataFrame(
+            df_scaled, columns=df.columns))[0]
 
         st.write(f"Оценка риск-балла с помощью модели: **:red[{scor_model}]**")
         st.write(f"Оценка риск-балла с помощью мат.алгоритма: **:red[{scor_math}]**")

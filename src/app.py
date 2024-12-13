@@ -6,10 +6,10 @@ from common_functions import load_scor_model, load_model, calculate_scor
 
 def main():
 
-    # загружаем модель и пайплайн для скелера введенных пользователем данных
+    # загружаем модель
     model = load_model()
 
-    # выводим тайтл и кратко обозначаем, что делает прил
+    # выводим тайтл и кратко обозначаем функционал приложения
     st.title("Определитель риска внедрения")
     st.write(
         """Сервис оценки технологического риска внедрений релизов программного обеспечения, 
@@ -18,12 +18,11 @@ def main():
          """
     )
 
-    # features = desc_dataset()
     # состав критериев
     df_params = load_scor_model()
     features = list(df_params.name)
 
-    # Выводим критерии оценки и слайдеры
+    # Выводим критерии оценки и слайдеры для выбора значения критерия
     num_elements = []
     for _, feature in df_params.iterrows():
         element = st.slider(
@@ -48,7 +47,7 @@ def main():
         # математический расчет скорбала
         scor_math = calculate_scor(df, df_params)
 
-        # для отладки интерфейса. ПОТОМ УДАЛИТЬ
+        # рандом скорбала модели (когда будет готова модель, поменять)
         scor_model = np.random.uniform(0, 5, 1)
         # scor_model = model.predict_proba(pd.DataFrame(df, columns=df.columns))
 

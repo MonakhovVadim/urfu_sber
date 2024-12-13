@@ -5,11 +5,14 @@ from common_functions import load_scor_model, load_model, calculate_scor
 
 
 def main():
+    """
+    Основная функция приложения
+    """
 
-    # загружаем модель
+    # Загружаем модель
     model = load_model()
 
-    # выводим тайтл и кратко обозначаем функционал приложения
+    # Выводим тайтл и кратко обозначаем функционал приложения
     st.title("Определитель риска внедрения")
     st.write(
         """Сервис оценки технологического риска внедрений релизов программного обеспечения, 
@@ -18,7 +21,7 @@ def main():
          """
     )
 
-    # состав критериев
+    # Состав критериев
     df_params = load_scor_model()
     features = list(df_params.name)
 
@@ -41,13 +44,14 @@ def main():
         for feature, fvalue in zip(features, num_elements):
             user_choice[feature] = fvalue
 
-        # переводим пользовательский вывод в датафрейм
+        # Переводим пользовательский вывод в датафрейм
         df = pd.DataFrame(user_choice, index=[0])
 
-        # математический расчет скорбала
+        # Математический расчет скорбала
         scor_math = calculate_scor(df, df_params)
 
-        # рандом скорбала модели (когда будет готова модель, поменять)
+        # Рандом скорбала модели
+        # TODO: когда будет готова модель, поменять
         scor_model = np.random.uniform(0, 5, 1)
         # scor_model = model.predict_proba(pd.DataFrame(df, columns=df.columns))
 

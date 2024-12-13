@@ -10,6 +10,13 @@ from common_functions import (
 
 
 def train_model(model_type):
+    """
+    Обучение модели
+
+    Аргументы:
+        model_type (str): тип модели ("DEFAULT", "CUSTOM")
+    """
+
     # Загружаем датасет
     data = load_dataset(DATA_TYPE.TRAIN, model_type)
 

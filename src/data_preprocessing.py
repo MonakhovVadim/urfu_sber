@@ -46,7 +46,7 @@ def preprocess_data(data, model_type):
         data (pd.Dataframe): dataframe с данными
         model_type (str): тип модели ("DEFAULT", "CUSTOM")
     """
-    
+
     # проверяем данные
     validate_data(data)
 
@@ -83,10 +83,8 @@ def main():
     # Загружаем базовый датасет
     data = load_dataset(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
     print(type(data))
-    
-    if data is not None:
-        # предобрабатываем данные
-        preprocess_data(data, MODEL_TYPE.DEFAULT)
+    # предобрабатываем данные
+    preprocess_data(data, MODEL_TYPE.DEFAULT)
 
 
 if __name__ == "__main__":

@@ -58,9 +58,8 @@ def dataset_generation(df_params, num_samples=1000):
 
 def main():
     df = load_scor_model(MODEL_TYPE.DEFAULT)
-    if df is not None:
-        data = dataset_generation(df, 1000)
-        save_dataset(data, DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
+    data = dataset_generation(df, 1000)
+    save_dataset(data, DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
 
 
 if __name__ == "__main__":

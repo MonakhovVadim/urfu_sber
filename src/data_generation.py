@@ -53,8 +53,9 @@ def dataset_generation(df_params, num_samples=1000):
 def main():
     df = load_scor_model()
     data = dataset_generation(df, 1000)
-    path = data_path(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT).with_suffix(".csv")
-    data.to_csv(path, index=False)
+    path = data_path(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data.to_csv(path.with_suffix(".csv"), index=False)
 
 
 if __name__ == "__main__":

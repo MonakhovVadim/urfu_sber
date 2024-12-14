@@ -19,17 +19,17 @@ def train_model(model_type):
 
     # Загружаем датасет
     data = load_dataset(DATA_TYPE.TRAIN, model_type)
+    if data is not None:
+        # Получаем имена предикторов и целевого признака
+        X, y = features_target(data)
 
-    # Получаем имена предикторов и целевого признака
-    X, y = features_target(data)
+        # TODO использовать модель получше
+        # Обучаем модель
+        model = LinearRegression()
+        model.fit(X, y)
 
-    # TODO использовать модель получше
-    # Обучаем модель
-    model = LinearRegression()
-    model.fit(X, y)
-
-    # Сохраняем модель
-    save_model(model, model_type)
+        # Сохраняем модель
+        save_model(model, model_type)
 
 
 def main():

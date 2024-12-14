@@ -13,26 +13,6 @@ from common_functions import (
 )
 
 
-def load_data(file):
-    """
-    Загрузка датасета из файла
-
-    Аргументы:
-        file : файл с данными
-
-    Returns:
-        pd.Dataframe: датафрейм с данными
-    """
-
-    # по расширению, определяем какую функцию загрузки датафрейма использовать
-    if file.name.endswith((".xls", ".xlsx")):
-        return pd.read_excel(file)
-    elif file.name.endswith(".csv"):
-        return pd.read_csv(file)
-    else:
-        return pd.DataFrame()
-
-
 def validate_data(data, required_columns=[]):
     """
     Валидация данных
@@ -66,9 +46,11 @@ def preprocess_data(data, model_type):
         data (pd.Dataframe): dataframe с данными
         model_type (str): тип модели ("DEFAULT", "CUSTOM")
     """
+    
+    # проверяем данные
+    validate_data(data)
 
     X, y = features_target(data)
-    # print(X.describe())
 
     # Избавляемся от дубликатов
     len_before_drop_publicates = len(data)
@@ -100,12 +82,11 @@ def preprocess_data(data, model_type):
 def main():
     # Загружаем базовый датасет
     data = load_dataset(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
-
-    # проверяем данный
-    validate_data(data)
-
-    # предобрабатываем данные
-    preprocess_data(data, MODEL_TYPE.DEFAULT)
+    print(type(data))
+    
+    if data is not None:
+        # предобрабатываем данные
+        preprocess_data(data, MODEL_TYPE.DEFAULT)
 
 
 if __name__ == "__main__":

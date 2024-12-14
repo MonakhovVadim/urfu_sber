@@ -11,53 +11,63 @@ MODEL_TYPE = Enum("MODEL_TYPE", ["DEFAULT", "CUSTOM"])
 ROOT_PATH = Path.cwd()
 
 
-def load_scor_model():
+def load_scor_model(model_type):
     """
-    Загрузка весов для алгоритма математической оценки.
-
-    Если существует файл scor_model.xlsx (сохраненный пользователем),
-        то подгружаются эти данные
-    Если файл не существует,
-        загружаются дефолтные данные из default_scor_model.xlsx
-
+    Загрузка скормодели (параметры, веса, мин/макс значение, описание)
+    Аргументы:
+        model_type (str): тип скормодели ("DEFAULT", "CUSTOM")
     Возвращает:
-        pd.DataFrame: датафрейм, содержащий критерии оценки, их веса,
-        минимально и максимально возможные значения критериев,
-        описания критериев
+        - data (pd.Dataframe): dataframe с параметрами матмодели
+        и None при ошибке загрузки
     """
 
-    if os.path.exists("data/scor_model.xlsx"):
-        return pd.read_excel("data/scor_model.xlsx", dtype={"weight": float})
-    elif os.path.exists("data/default_scor_model.xlsx"):
-        return pd.read_excel("data/default_scor_model.xlsx")
-    else:
-        return pd.DataFrame()
+    base_path = (
+        ROOT_PATH
+        / "data"
+        / ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
+    )
+    path = f"{base_path}_scor_model.xlsx"
+   
+    try:
+        scor_param = pd.read_excel(path, dtype={"weight": float})
+        return scor_param
+    except Exception as e:
+        print(f"Ошибка при загрузке скормодели {model_type}!\n", e)
+        return None
 
 
 def save_scor_model(df):
     """
-    Сохранение новых весов критериев, заданных пользователем
+    Сохранение новых весов параметров, заданных пользователем
 
     Аргументы:
         df (pd.Dataframe): pandas dataframe с весами критериев
     """
 
-    os.makedirs("data", exist_ok=True)
-    df.to_excel("data/scor_model.xlsx", index=False)
+    base_path = ROOT_PATH / "data" / "custom"
+    path = f"{base_path}_scor_model.xlsx"
+
+    try:
+        os.makedirs("data", exist_ok=True)
+        df.to_excel(path, index=False)
+    except Exception as e:
+        print(f"Ошибка при сохранении скормодели {path}!\n", e)
+        return None
 
 
 def recalculate_values(df_data, df_params):
     """
-    Функция возвращает датафрейм с оценкой критериев, измененных с учетом direct_dependence каждого критерия
-    Критерии в датафрейме могут иметь либо прямую либо обратную зависимость, между значением критерия и риском.
+    Функция возвращает датафрейм с оценкой критериев, измененных с учетом
+    direct_dependence каждого критерия. Критерии в датафрейме могут иметь
+    либо прямую либо обратную зависимость, между значением критерия и риском.
     Каждый критерий имеет параметр direct_dependence
-    - direct_dependence = 1, означает прямую зависмость риска от значения (чем выше значение, тем выше риск)
-    - direct_dependence = 0, означает обратную зависимость, чем ниже значение, тем выше риск
+    - direct_dependence = 1, означает прямую зависмость риска от значения
+    - direct_dependence = 0, означает обратную зависимость
     Параметры:
      - df_data (pd.Dataframe): датафрейм с данными
-     - df_params (pd.Dataframe): датафрейм с параметрами критериев (вес, зависимость, максимальное значение)
+     - df_params (pd.Dataframe): датафрейм с параметрами критериев
      Возвращает:
-     - df_recalculated (pd.Dataframe): измененный датафрейм с учетом direct_dependence
+     - df_recalculated (pd.Dataframe): измененный датафрейм с учетом зависиости
     """
 
     # Создаем копию датафрейма с данными для изменения
@@ -101,7 +111,7 @@ def calculate_scor(df_data, df_params):
     Математический расчет скорбала
 
     Аргументы:
-        df_data (pd.Dataframe): dataframe с введенными пользователем значениями критериев
+        df_data (pd.Dataframe): dataframe со значениями критериев
         df_params (pd.Dataframe): dataframe с весами критериев
 
     Возвращает:
@@ -198,15 +208,15 @@ def save_dataset(data, data_type, model_type):
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
         data.to_csv(path.with_suffix(".csv"), index=False)
+        print(f"Датасет {model_type} сохранен: {path}")
     except PermissionError:
         print(
-            "Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}."
+            f"Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}.\n", e
         )
     except Exception as e:
         print(f"Ошибка при сохранении датасета {data_type} {model_type}!\n", e)
 
 
-# функция осуществляет загрузку датасета из файла
 def load_dataset(data_type, model_type):
     """
     Загрузка датасета из файла
@@ -245,7 +255,7 @@ def save_pipeline(pipeline, model_type):
         print("Пайплайн успешно сохранен.")
     except PermissionError:
         print(
-            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {path}."
+            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {path}.\n", e
         )
     except Exception as e:
         print(f"Произошла неизвестная ошибка: {e}")

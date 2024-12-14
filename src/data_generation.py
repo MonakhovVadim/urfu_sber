@@ -1,7 +1,13 @@
-from common_functions import normalize_df
 import numpy as np
 import pandas as pd
-from common_functions import load_scor_model, data_path, recalculate_values, DATA_TYPE, MODEL_TYPE
+from common_functions import (
+    load_scor_model,
+    save_dataset,
+    normalize_df,
+    recalculate_values,
+    DATA_TYPE,
+    MODEL_TYPE,
+)
 
 
 def dataset_generation(df_params, num_samples=1000):
@@ -12,7 +18,7 @@ def dataset_generation(df_params, num_samples=1000):
 
     Параметры:
     - df_params: датафрейм с критериями и их весами
-    - num_samples: количесвто строк для генерации в синтетическом датасете (по умолчанию 1000)
+    - num_samples: количесвто строк для генерации датасета
     """
 
     # если датафрейм пустой, значит у нас нет весов и мы не сможем сгенерировать датасет
@@ -23,7 +29,7 @@ def dataset_generation(df_params, num_samples=1000):
 
     # Генерация синтетических данных
     synthetic_data = {}
-    for index, row in df_params.iterrows():
+    for _, row in df_params.iterrows():
         feature_values = np.random.randint(
             row["min_value"], row["max_value"] + 1, num_samples
         )
@@ -51,11 +57,10 @@ def dataset_generation(df_params, num_samples=1000):
 
 
 def main():
-    df = load_scor_model()
+    df = load_scor_model(MODEL_TYPE.DEFAULT)
     data = dataset_generation(df, 1000)
-    path = data_path(DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    data.to_csv(path.with_suffix(".csv"), index=False)
+    save_dataset(data, DATA_TYPE.BASE, MODEL_TYPE.DEFAULT)
+
 
 
 if __name__ == "__main__":

@@ -40,7 +40,8 @@ RUN chown appuser:appuser data models
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements.txt \
-    pip install --no-cache-dir pytest \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install pytest \
 
 # Switch to the non-privileged user to run the application.
 USER appuser

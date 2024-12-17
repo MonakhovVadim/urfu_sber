@@ -30,6 +30,9 @@ ENV PATH="/app/venv/bin:$PATH"
 # Copy the source code into the container.
 COPY . .
 
+# create dir models
+RUN mkdir models
+
 # set owner for data and models dirs
 RUN chown appuser:appuser data models
 

@@ -6,3 +6,4 @@ src/__pycache__/
 /data/custom/*
 /models/default/*.pkl
 /models/custom/*.pkl
+.~lock*

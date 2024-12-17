@@ -43,30 +43,35 @@
 ## Структура репозитория
 
 ```plaintext
+├── data                                  # Данные
+│   └── default_scor_model.xlsx        # Дефолтная скормодель
+├── docs                                  # Документация
+│   ├── README.md
+│   ├── USAGE_README.md
+│   └── app_screenshot.png
+├── install
+│   └── install_script.sh              # Установщик docker и docker compose
+├── src
+│   ├── pages
+│   │   ├── __init__.py
+│   │   ├── ds_generation.py     # Интерфейс генератора синтетического датасета
+│   │   ├── upload_train.py      # Интерфейс загрузки датасета и запуск процедуры обучения модели
+│   │   └── version.py           # Описание версий приложения
+│   ├── __init__.py
+│   ├── app.py                         # Главная страница веб-приложения
+│   ├── common_functions.py            # Основные функции для использования в других скриптах
+│   ├── data_generation.py             # Генерация данных для синтетического датасета
+│   ├── data_preprocessing.py          # Обработка данных
+│   ├── model_preparation.py           # Инициализация и обучение модели
+│   └── model_testing.py               # Оценка модели
+├── tests
+│   ├── __init__.py
+│   └── test_model.py                  # Автотесты
 ├── Dockerfile
 ├── README.md
 ├── __init__.py
 ├── docker-compose.yaml
-├── requirements.txt             # Файл с зависимостями
-├── data
-│   ├── default_scor_model.xlsx  # Дефолтная скормодель
-├── install
-│   ├── install_script.sh        # Установщик docker и docker compose
-├── src
-│   ├── __init__.py
-│   ├── app.py                   # Главная страница веб-приложения
-│   │   ├── __init__.py
-│   │   ├── ds_generation.py     # Интерфейс генератора синтетического датасета
-│   │   ├── upload_train.py      # Интерфейс загрузки датасета и запуск процедуры обучения модели
-│   │   ├── version.py           # Описание версий приложения
-│   ├── common_functions.py      # Основные функции для использования в других скриптах
-│   ├── data_generation.py       # Генерация данных для синтетического датасета
-│   ├── data_preprocessing.py    # Обработка данных
-│   ├── model_preparation.py     # Инициализация и обучение модели
-│   └── model_testing.py         # Оценка модели
-└── tests
-    ├── __init__.py
-    └── test_model.py            # Автотесты
+└── requirements.txt
 ```
 
 ## Использование приоложения 

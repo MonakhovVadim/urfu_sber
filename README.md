@@ -81,7 +81,7 @@
    cd urfu_sber/
    ```
 
-2. Установка зависимостей:
+2. Установка docker, docker compose:
    ```bash
    sudo ./install/install_script.sh
    ```

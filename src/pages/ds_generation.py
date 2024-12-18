@@ -1,5 +1,5 @@
 import streamlit as st
-from common_functions import save_scor_model, MODEL_TYPE
+from common_functions import save_scor_model
 from data_generation import dataset_generation
 import os
 

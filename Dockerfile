@@ -30,13 +30,18 @@ ENV PATH="/app/venv/bin:$PATH"
 # Copy the source code into the container.
 COPY . .
 
+# create dir models
+RUN mkdir models
+
 # set owner for data and models dirs
 RUN chown appuser:appuser data models
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r requirements.txt
+    pip install -r requirements.txt \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install pytest \
 
 # Switch to the non-privileged user to run the application.
 USER appuser

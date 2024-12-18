@@ -36,5 +36,5 @@ if st.button("Обучить модель", type="primary"):
         # модель переобучена, требуется перезагрузка модели
         st.session_state.reload_model_required = True
 
-        st.write(f"Метрики обученной модели ")
+        st.write("Метрики обученной модели")
         st.write(test_model(MODEL_TYPE.CUSTOM))

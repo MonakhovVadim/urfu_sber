@@ -3,7 +3,6 @@ from enum import Enum
 import joblib
 import pandas as pd
 import os
-import numpy as np
 
 
 DATA_TYPE = Enum("DATA_TYPE", ["BASE", "TRAIN", "TEST"])
@@ -27,7 +26,7 @@ def load_scor_model(model_type):
         / ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
     )
     path = f"{base_path}_scor_model.xlsx"
-   
+
     try:
         scor_param = pd.read_excel(path, dtype={"weight": float})
         return scor_param
@@ -211,7 +210,7 @@ def save_dataset(data, data_type, model_type):
         print(f"Датасет {model_type} сохранен: {path}")
     except PermissionError:
         print(
-            f"Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}.\n", e
+            f"Ошибка доступа! Убедитесь, что у вас есть права на запись в директорию {path}.\n"
         )
     except Exception as e:
         print(f"Ошибка при сохранении датасета {data_type} {model_type}!\n", e)
@@ -255,7 +254,7 @@ def save_pipeline(pipeline, model_type):
         print("Пайплайн успешно сохранен.")
     except PermissionError:
         print(
-            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {path}.\n", e
+            f"Ошибка доступа. Убедитесь, что у вас есть права на запись в директорию {path}.\n"
         )
     except Exception as e:
         print(f"Произошла неизвестная ошибка: {e}")

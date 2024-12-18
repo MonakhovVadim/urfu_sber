@@ -4,7 +4,7 @@
 import os
 import tempfile
 from sklearn.linear_model import LinearRegression
-from common_functions import save_model
+from src.common_functions import save_model
 
 
 def test_save_model():

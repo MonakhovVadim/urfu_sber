@@ -1,6 +1,6 @@
 from sklearn.metrics import r2_score
 
-from ..src.common_functions import (
+from src.common_functions import (
     load_dataset,
     load_model,
     features_target,

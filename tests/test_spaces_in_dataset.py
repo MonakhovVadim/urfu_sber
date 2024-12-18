@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 from unittest.mock import patch
-from main import train_model
+from src.model_preparation import train_model
 
 
 @patch("common_functions.load_dataset")

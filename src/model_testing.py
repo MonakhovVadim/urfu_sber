@@ -37,7 +37,6 @@ def test_model(model_type):
 
 
 def main():
-
     _, metrics = test_model(MODEL_TYPE.DEFAULT)
     assert metrics["R2"] > 0.85, f"Ошибка! R2-score на тестовых данных: {metrics['R2']}"
 

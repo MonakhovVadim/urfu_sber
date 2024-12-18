@@ -40,7 +40,7 @@ def main():
     if st.session_state.df_params is not None:
         features_name = list(st.session_state.df_params.name)
     else:
-        st.error(f"Ошибка: файл с данными дефолтной скормодели отсутствует!")
+        st.error("Ошибка: файл с данными дефолтной скормодели отсутствует!")
 
     # Выводим критерии оценки и слайдеры для выбора значения критерия
     num_elements = []

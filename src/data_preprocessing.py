@@ -3,7 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from common_functions import (
+from urfu_sber.src.common_functions import (
     load_dataset,
     save_dataset,
     save_pipeline,

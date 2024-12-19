@@ -10,6 +10,22 @@ MODEL_TYPE = Enum("MODEL_TYPE", ["DEFAULT", "CUSTOM"])
 ROOT_PATH = Path.cwd()
 
 
+def get_file_path(model_type):
+    """
+       Возвращает путь до Excel файла
+       Аргументы:
+           model_type (str): тип скормодели ("DEFAULT", "CUSTOM")
+       Возвращает:
+           - path (str): путь до файла
+       """
+    base_path = (
+            ROOT_PATH
+            / "data"
+            / ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
+    )
+    return f"{base_path}_scor_model.xlsx"
+
+
 def load_scor_model(model_type):
     """
     Загрузка скормодели (параметры, веса, мин/макс значение, описание)
@@ -20,12 +36,7 @@ def load_scor_model(model_type):
         и None при ошибке загрузки
     """
 
-    base_path = (
-        ROOT_PATH
-        / "data"
-        / ("custom" if model_type == MODEL_TYPE.CUSTOM else "default")
-    )
-    path = f"{base_path}_scor_model.xlsx"
+    path = get_file_path(model_type)
 
     try:
         scor_param = pd.read_excel(path, dtype={"weight": float})

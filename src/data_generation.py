@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from common_functions import (
+from urfu_sber.src.common_functions import (
     load_scor_model,
     save_dataset,
     normalize_df,

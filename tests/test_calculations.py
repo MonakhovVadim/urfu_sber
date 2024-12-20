@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from urfu_sber.src.common_functions import calculate_scor, normalize_df
+from common_functions import calculate_scor, normalize_df
 
 
 def test_calculate_score_direct_dependency():

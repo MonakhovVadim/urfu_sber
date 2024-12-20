@@ -29,4 +29,5 @@ jobs:
 
       - name: Run tests
         run: |
+          export PYTHONPATH="$PYTHONPATH:$PWD/src"
           pytest

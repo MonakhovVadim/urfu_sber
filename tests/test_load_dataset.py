@@ -3,9 +3,8 @@
 # №№ Тест проверяет, что данные возвращаются как DataFrame и содержат ожидаемые столбцы.
 
 import pandas as pd
-from urfu_sber.src.common_functions import load_dataset, DATA_TYPE, MODEL_TYPE
-
-from urfu_sber.tests.prepare_test_data import prepare_test_data
+from common_functions import load_dataset, DATA_TYPE, MODEL_TYPE
+from tests.prepare_test_data import prepare_test_data
 
 
 def test_load_dataset_valid():

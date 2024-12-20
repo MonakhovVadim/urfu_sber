@@ -30,8 +30,8 @@ ENV PATH="/app/venv/bin:$PATH"
 # Copy the source code into the container.
 COPY . .
 
-# create dir models
-RUN mkdir models
+# create dir models, if not exists.
+RUN test -e models || mkdir models
 
 # set owner for data and models dirs
 RUN chown appuser:appuser data models
@@ -48,6 +48,7 @@ USER appuser
 RUN python src/data_generation.py
 RUN python src/data_preprocessing.py
 RUN python src/model_preparation.py
+RUN python src/model_testing.py
 
 # Expose the port that the application listens on.
 EXPOSE 8501

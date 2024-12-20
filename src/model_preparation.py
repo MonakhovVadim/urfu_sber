@@ -1,6 +1,6 @@
 from sklearn.linear_model import LinearRegression
 
-from urfu_sber.src.common_functions import (
+from common_functions import (
     features_target,
     load_dataset,
     save_model,

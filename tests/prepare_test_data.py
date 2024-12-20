@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from urfu_sber.src.common_functions import get_file_path, MODEL_TYPE
-from urfu_sber.src.data_generation import main as dg
-from urfu_sber.src.data_preprocessing import main as dp
-from urfu_sber.src.model_preparation import main as mp
+from common_functions import get_file_path, MODEL_TYPE
+from data_generation import main as dg
+from data_preprocessing import main as dp
+from model_preparation import main as mp
 
 ROOT_PATH = Path.cwd()
 

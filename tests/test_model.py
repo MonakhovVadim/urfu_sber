@@ -1,5 +1,5 @@
 from sklearn.metrics import r2_score
-from urfu_sber.src.common_functions import (
+from common_functions import (
     load_dataset,
     load_model,
     features_target,
@@ -7,7 +7,7 @@ from urfu_sber.src.common_functions import (
     MODEL_TYPE
 )
 
-from urfu_sber.tests.prepare_test_data import prepare_test_data
+from tests.prepare_test_data import prepare_test_data
 
 
 def test_model():
